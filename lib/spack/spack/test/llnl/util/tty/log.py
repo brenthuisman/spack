@@ -78,6 +78,20 @@ def test_log_python_output_and_echo_output(capfd, tmpdir):
         assert capfd.readouterr()[0] == 'force echo\n'
 
 
+def test_log_output_with_filter(capfd, tmpdir):
+    filter_fn = lambda s: s.replace("foo", "bar")
+
+    with tmpdir.as_cwd():
+        with log_output('foo.txt', filter_fn=filter_fn):
+            print('foo blah')
+            print('blah foo')
+            print('foo foo')
+
+        # foo.txt has output
+        with open('foo.txt') as f:
+            assert f.read() == 'bar blah\nblah bar\nbar bar\n'
+
+
 @pytest.mark.skipif(not which('echo'), reason="needs echo command")
 def test_log_subproc_and_echo_output_no_capfd(capfd, tmpdir):
     echo = which('echo')
